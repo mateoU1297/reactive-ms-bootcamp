@@ -1,8 +1,11 @@
 package com.pragma.ms_bootcamp.domain.model;
 
+import java.util.List;
+
 public class Capacity {
     private Long id;
     private String name;
+    private List<Technology> technologies;
 
     public Capacity() {
     }
@@ -10,6 +13,12 @@ public class Capacity {
     public Capacity(Long id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public Capacity(Long id, String name, List<Technology> technologies) {
+        this.id = id;
+        this.name = name;
+        this.technologies = technologies;
     }
 
     public Long getId() {
@@ -26,5 +35,13 @@ public class Capacity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Technology> getTechnologies() {
+        return technologies;
+    }
+
+    public void setTechnologies(List<Technology> technologies) {
+        this.technologies = technologies;
     }
 }

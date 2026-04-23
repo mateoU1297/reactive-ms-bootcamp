@@ -17,6 +17,8 @@ public class BootcampValidator {
     private static final int MIN_CAPACITIES = 1;
     private static final int MAX_CAPACITIES = 4;
 
+    private static final List<String> VALID_SORT_FIELDS = List.of("name", "capacityCount");
+
     private BootcampValidator() {
     }
 
@@ -27,6 +29,17 @@ public class BootcampValidator {
                 .then(validateDuration(bootcamp.getDurationMonths()))
                 .then(validateCapacities(bootcamp.getCapacities()))
                 .thenReturn(bootcamp);
+    }
+
+    public static Mono<Boolean> validatePagination(int page, int size, String sortBy) {
+        if (page < 0)
+            return Mono.error(new InvalidFieldException("Page must be >= 0"));
+        if (size <= 0)
+            return Mono.error(new InvalidFieldException("Size must be > 0"));
+        if (!VALID_SORT_FIELDS.contains(sortBy))
+            return Mono.error(new InvalidFieldException(
+                    "SortBy must be one of: " + VALID_SORT_FIELDS));
+        return Mono.just(true);
     }
 
     private static Mono<Void> validateName(String name) {
