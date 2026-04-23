@@ -7,6 +7,7 @@ import com.pragma.ms_bootcamp.domain.exception.InvalidCapacityCountException;
 import com.pragma.ms_bootcamp.domain.exception.InvalidFieldException;
 import com.pragma.ms_bootcamp.domain.model.Bootcamp;
 import com.pragma.ms_bootcamp.domain.model.Capacity;
+import com.pragma.ms_bootcamp.domain.model.PagedResult;
 import com.pragma.ms_bootcamp.domain.spi.IBootcampPersistencePort;
 import com.pragma.ms_bootcamp.domain.spi.ICapacityClientPort;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -159,5 +161,71 @@ class BootcampUseCaseTest {
         StepVerifier.create(bootcampUseCase.save(bootcamp))
                 .expectError(InvalidFieldException.class)
                 .verify();
+    }
+
+    @Test
+    void findAll_validParams_success() {
+        PagedResult<Bootcamp> paged = new PagedResult<>(
+                List.of(bootcamp), 0, 10, 1L, 1
+        );
+        when(bootcampPersistencePort.findAll(0, 10, "name", true))
+                .thenReturn(Mono.just(paged));
+
+        StepVerifier.create(bootcampUseCase.findAll(0, 10, "name", true))
+                .expectNextMatches(r -> r.getContent().size() == 1)
+                .verifyComplete();
+    }
+
+    @Test
+    void findAll_invalidSortBy_throwsInvalidField() {
+        StepVerifier.create(bootcampUseCase.findAll(0, 10, "invalid", true))
+                .expectError(InvalidFieldException.class)
+                .verify();
+
+        verifyNoInteractions(bootcampPersistencePort);
+    }
+
+    @Test
+    void findAll_negativePage_throwsInvalidField() {
+        StepVerifier.create(bootcampUseCase.findAll(-1, 10, "name", true))
+                .expectError(InvalidFieldException.class)
+                .verify();
+
+        verifyNoInteractions(bootcampPersistencePort);
+    }
+
+    @Test
+    void findAll_zeroSize_throwsInvalidField() {
+        StepVerifier.create(bootcampUseCase.findAll(0, 0, "name", true))
+                .expectError(InvalidFieldException.class)
+                .verify();
+
+        verifyNoInteractions(bootcampPersistencePort);
+    }
+
+    @Test
+    void findAll_sortByCapacityCount_success() {
+        PagedResult<Bootcamp> paged = new PagedResult<>(
+                List.of(bootcamp), 0, 10, 1L, 1
+        );
+        when(bootcampPersistencePort.findAll(0, 10, "capacityCount", true))
+                .thenReturn(Mono.just(paged));
+
+        StepVerifier.create(bootcampUseCase.findAll(0, 10, "capacityCount", true))
+                .expectNextMatches(r -> r.getContent().size() == 1)
+                .verifyComplete();
+    }
+
+    @Test
+    void findAll_descendingOrder_success() {
+        PagedResult<Bootcamp> paged = new PagedResult<>(
+                List.of(bootcamp), 0, 10, 1L, 1
+        );
+        when(bootcampPersistencePort.findAll(0, 10, "name", false))
+                .thenReturn(Mono.just(paged));
+
+        StepVerifier.create(bootcampUseCase.findAll(0, 10, "name", false))
+                .expectNextMatches(r -> r.getContent().size() == 1)
+                .verifyComplete();
     }
 }

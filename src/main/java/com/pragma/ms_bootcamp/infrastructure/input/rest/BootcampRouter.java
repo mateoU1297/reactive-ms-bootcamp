@@ -2,7 +2,10 @@ package com.pragma.ms_bootcamp.infrastructure.input.rest;
 
 import com.pragma.ms_bootcamp.application.dto.BootcampRequest;
 import com.pragma.ms_bootcamp.application.dto.BootcampResponse;
+import com.pragma.ms_bootcamp.application.dto.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -50,11 +53,42 @@ public class BootcampRouter {
                                             description = "Bootcamp already exists")
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/bootcamps",
+                    method = RequestMethod.GET,
+                    beanClass = BootcampRestHandler.class,
+                    beanMethod = "findAll",
+                    operation = @Operation(
+                            operationId = "findAllBootcamps",
+                            summary = "List bootcamps paginated",
+                            tags = {"Bootcamp"},
+                            parameters = {
+                                    @Parameter(name = "page", in = ParameterIn.QUERY,
+                                            schema = @Schema(type = "integer", defaultValue = "0")),
+                                    @Parameter(name = "size", in = ParameterIn.QUERY,
+                                            schema = @Schema(type = "integer", defaultValue = "10")),
+                                    @Parameter(name = "sortBy", in = ParameterIn.QUERY,
+                                            schema = @Schema(type = "string",
+                                                    allowableValues = {"name", "capacityCount"},
+                                                    defaultValue = "name")),
+                                    @Parameter(name = "ascending", in = ParameterIn.QUERY,
+                                            schema = @Schema(type = "boolean", defaultValue = "true"))
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "200",
+                                            content = @Content(
+                                                    schema = @Schema(implementation = PagedResponse.class)
+                                            )),
+                                    @ApiResponse(responseCode = "400", description = "Invalid parameters")
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> bootcampRoutes(BootcampRestHandler handler) {
         return RouterFunctions.route()
                 .POST("/api/v1/bootcamps", handler::save)
+                .GET("/api/v1/bootcamps", handler::findAll)
                 .build();
     }
 }

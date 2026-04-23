@@ -5,6 +5,7 @@ import com.pragma.ms_bootcamp.domain.exception.BootcampAlreadyExistsException;
 import com.pragma.ms_bootcamp.domain.exception.CapacityNotFoundException;
 import com.pragma.ms_bootcamp.domain.model.Bootcamp;
 import com.pragma.ms_bootcamp.domain.model.Capacity;
+import com.pragma.ms_bootcamp.domain.model.PagedResult;
 import com.pragma.ms_bootcamp.domain.spi.IBootcampPersistencePort;
 import com.pragma.ms_bootcamp.domain.spi.ICapacityClientPort;
 import com.pragma.ms_bootcamp.domain.validator.BootcampValidator;
@@ -38,6 +39,12 @@ public class BootcampUseCase implements IBootcampServicePort {
                     bootcamp.setCapacities(capacities);
                     return bootcampPersistencePort.save(bootcamp);
                 });
+    }
+
+    @Override
+    public Mono<PagedResult<Bootcamp>> findAll(int page, int size, String sortBy, boolean ascending) {
+        return BootcampValidator.validatePagination(page, size, sortBy)
+                .flatMap(valid -> bootcampPersistencePort.findAll(page, size, sortBy, ascending));
     }
 
     private Mono<List<Capacity>> validateCapacitiesExist(List<Capacity> capacities) {

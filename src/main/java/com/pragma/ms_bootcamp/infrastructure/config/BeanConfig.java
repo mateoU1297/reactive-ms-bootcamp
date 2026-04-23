@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -36,12 +37,14 @@ public class BeanConfig {
     }
 
     @Bean
-    public IBootcampPersistencePort bootcampPersistencePort() {
-        return new BootcampPersistenceAdapter(bootcampRepository, bootcampCapacityRepository, bootcampEntityMapper);
+    public IBootcampPersistencePort bootcampPersistencePort(ICapacityClientPort capacityClientPort, DatabaseClient databaseClient) {
+        return new BootcampPersistenceAdapter(bootcampRepository, bootcampCapacityRepository, bootcampEntityMapper,
+                capacityClientPort, databaseClient
+        );
     }
 
     @Bean
-    public IBootcampServicePort bootcampServicePort(ICapacityClientPort capacityClientPort) {
-        return new BootcampUseCase(bootcampPersistencePort(), capacityClientPort);
+    public IBootcampServicePort bootcampServicePort(IBootcampPersistencePort bootcampPersistencePort, ICapacityClientPort capacityClientPort) {
+        return new BootcampUseCase(bootcampPersistencePort, capacityClientPort);
     }
 }
