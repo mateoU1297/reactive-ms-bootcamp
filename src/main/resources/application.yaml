@@ -1,3 +1,29 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: ms-bootcamp
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/bootcamp_db?currentSchema=ms_bootcamp
+    username: postgres
+    password: 1297
+  flyway:
+    url: jdbc:postgresql://localhost:5432/bootcamp_db
+    user: postgres
+    password: 1297
+    locations: classpath:db/migration
+    schemas: ms_bootcamp
+    default-schema: ms_bootcamp
+    baseline-on-migrate: true
+    baseline-version: 0
+
+clients:
+  capacity:
+    url: http://localhost:8081
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
