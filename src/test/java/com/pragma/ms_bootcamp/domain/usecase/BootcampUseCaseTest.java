@@ -1,6 +1,7 @@
 package com.pragma.ms_bootcamp.domain.usecase;
 
 import com.pragma.ms_bootcamp.domain.exception.BootcampAlreadyExistsException;
+import com.pragma.ms_bootcamp.domain.exception.BootcampNotFoundException;
 import com.pragma.ms_bootcamp.domain.exception.CapacityNotFoundException;
 import com.pragma.ms_bootcamp.domain.exception.DuplicateCapacityException;
 import com.pragma.ms_bootcamp.domain.exception.InvalidCapacityCountException;
@@ -23,6 +24,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -227,5 +230,25 @@ class BootcampUseCaseTest {
         StepVerifier.create(bootcampUseCase.findAll(0, 10, "name", false))
                 .expectNextMatches(r -> r.getContent().size() == 1)
                 .verifyComplete();
+    }
+
+    @Test
+    void delete_existingBootcamp_success() {
+        when(bootcampPersistencePort.existsById(1L)).thenReturn(Mono.just(true));
+        when(bootcampPersistencePort.delete(1L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(bootcampUseCase.delete(1L))
+                .verifyComplete();
+    }
+
+    @Test
+    void delete_notFound_throwsBootcampNotFound() {
+        when(bootcampPersistencePort.existsById(1L)).thenReturn(Mono.just(false));
+
+        StepVerifier.create(bootcampUseCase.delete(1L))
+                .expectError(BootcampNotFoundException.class)
+                .verify();
+
+        verify(bootcampPersistencePort, never()).delete(any());
     }
 }

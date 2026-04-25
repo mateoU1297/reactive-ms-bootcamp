@@ -83,12 +83,36 @@ public class BootcampRouter {
                                     @ApiResponse(responseCode = "400", description = "Invalid parameters")
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/bootcamps/{id}",
+                    method = RequestMethod.DELETE,
+                    beanClass = BootcampRestHandler.class,
+                    beanMethod = "delete",
+                    operation = @Operation(
+                            operationId = "deleteBootcamp",
+                            summary = "Delete a bootcamp",
+                            tags = {"Bootcamp"},
+                            parameters = {
+                                    @Parameter(
+                                            name = "id",
+                                            in = ParameterIn.PATH,
+                                            required = true,
+                                            schema = @Schema(type = "integer", format = "int64")
+                                    )
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "204", description = "Bootcamp deleted successfully"),
+                                    @ApiResponse(responseCode = "404", description = "Bootcamp not found")
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> bootcampRoutes(BootcampRestHandler handler) {
         return RouterFunctions.route()
                 .POST("/api/v1/bootcamps", handler::save)
                 .GET("/api/v1/bootcamps", handler::findAll)
+                .DELETE("/api/v1/bootcamps/{id}", handler::delete)
                 .build();
     }
 }

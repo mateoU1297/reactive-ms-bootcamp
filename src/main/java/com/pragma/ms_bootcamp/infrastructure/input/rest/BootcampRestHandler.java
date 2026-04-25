@@ -32,4 +32,10 @@ public class BootcampRestHandler {
         return bootcampHandler.findAll(page, size, sortBy, ascending)
                 .flatMap(response -> ServerResponse.ok().bodyValue(response));
     }
+
+    public Mono<ServerResponse> delete(ServerRequest request) {
+        Long id = Long.parseLong(request.pathVariable("id"));
+        return bootcampHandler.delete(id)
+                .then(ServerResponse.noContent().build());
+    }
 }

@@ -8,4 +8,6 @@ public interface IBootcampServicePort {
     Mono<Bootcamp> save(Bootcamp bootcamp);
 
     Mono<PagedResult<Bootcamp>> findAll(int page, int size, String sortBy, boolean ascending);
+
+    Mono<Void> delete(Long id);
 }

@@ -1,6 +1,7 @@
 package com.pragma.ms_bootcamp.infrastructure.config;
 
 import com.pragma.ms_bootcamp.domain.exception.BootcampAlreadyExistsException;
+import com.pragma.ms_bootcamp.domain.exception.BootcampNotFoundException;
 import com.pragma.ms_bootcamp.domain.exception.CapacityNotFoundException;
 import com.pragma.ms_bootcamp.domain.exception.DuplicateCapacityException;
 import com.pragma.ms_bootcamp.domain.exception.InvalidCapacityCountException;
@@ -53,7 +54,7 @@ public class GlobalErrorHandler extends AbstractErrorWebExceptionHandler {
                 error instanceof DuplicateCapacityException) {
             status = HttpStatus.BAD_REQUEST;
             message = error.getMessage();
-        } else if (error instanceof CapacityNotFoundException) {
+        } else if (error instanceof CapacityNotFoundException || error instanceof BootcampNotFoundException) {
             status = HttpStatus.NOT_FOUND;
             message = error.getMessage();
         } else {

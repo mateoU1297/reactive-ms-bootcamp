@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.r2dbc.core.DatabaseClient;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -55,8 +56,7 @@ public class BootcampPersistenceAdapter implements IBootcampPersistencePort {
     }
 
     @Override
-    public Mono<PagedResult<Bootcamp>> findAll(int page, int size,
-                                               String sortBy, boolean ascending) {
+    public Mono<PagedResult<Bootcamp>> findAll(int page, int size, String sortBy, boolean ascending) {
         String direction = ascending ? "ASC" : "DESC";
         int offset = page * size;
 
@@ -72,16 +72,16 @@ public class BootcampPersistenceAdapter implements IBootcampPersistencePort {
                         bootcamps = bootcampRepository.findAllBy(PageRequest.of(page, size, sort));
                     } else {
                         String sql = """
-                            SELECT b.id, b.name, b.description,
-                                   b.launch_date, b.duration_months
-                            FROM ms_bootcamp.bootcamp b
-                            LEFT JOIN ms_bootcamp.bootcamp_capacity bc
-                                ON b.id = bc.bootcamp_id
-                            GROUP BY b.id, b.name, b.description,
-                                     b.launch_date, b.duration_months
-                            ORDER BY COUNT(bc.capacity_id) %s
-                            LIMIT %d OFFSET %d
-                            """.formatted(direction, size, offset);
+                                SELECT b.id, b.name, b.description,
+                                       b.launch_date, b.duration_months
+                                FROM ms_bootcamp.bootcamp b
+                                LEFT JOIN ms_bootcamp.bootcamp_capacity bc
+                                    ON b.id = bc.bootcamp_id
+                                GROUP BY b.id, b.name, b.description,
+                                         b.launch_date, b.duration_months
+                                ORDER BY COUNT(bc.capacity_id) %s
+                                LIMIT %d OFFSET %d
+                                """.formatted(direction, size, offset);
 
                         bootcamps = databaseClient.sql(sql)
                                 .map((row, meta) -> new BootcampEntity(
@@ -105,6 +105,28 @@ public class BootcampPersistenceAdapter implements IBootcampPersistencePort {
                                     (int) Math.ceil((double) total / size)
                             ));
                 });
+    }
+
+    @Override
+    public Mono<Boolean> existsById(Long id) {
+        return bootcampRepository.existsById(id);
+    }
+
+    @Override
+    @Transactional
+    public Mono<Void> delete(Long id) {
+        return bootcampCapacityRepository.findByBootcampId(id)
+                .flatMap(rel ->
+                        bootcampCapacityRepository.countByCapacityId(rel.getCapacityId())
+                                .flatMap(count -> {
+                                    if (count <= 1)
+                                        return capacityClientPort.deleteIfNotReferenced(rel.getCapacityId());
+
+                                    return Mono.empty();
+                                })
+                )
+                .then(bootcampCapacityRepository.deleteByBootcampId(id))
+                .then(bootcampRepository.deleteById(id));
     }
 
     private Mono<Bootcamp> mapWithCapacities(BootcampEntity entity) {
