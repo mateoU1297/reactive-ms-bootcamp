@@ -5,4 +5,6 @@ import reactor.core.publisher.Mono;
 
 public interface ICapacityClientPort {
     Mono<Capacity> findById(Long id);
+
+    Mono<Void> deleteIfNotReferenced(Long capacityId);
 }

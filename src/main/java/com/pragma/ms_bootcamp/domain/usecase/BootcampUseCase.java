@@ -2,6 +2,7 @@ package com.pragma.ms_bootcamp.domain.usecase;
 
 import com.pragma.ms_bootcamp.domain.api.IBootcampServicePort;
 import com.pragma.ms_bootcamp.domain.exception.BootcampAlreadyExistsException;
+import com.pragma.ms_bootcamp.domain.exception.BootcampNotFoundException;
 import com.pragma.ms_bootcamp.domain.exception.CapacityNotFoundException;
 import com.pragma.ms_bootcamp.domain.model.Bootcamp;
 import com.pragma.ms_bootcamp.domain.model.Capacity;
@@ -45,6 +46,16 @@ public class BootcampUseCase implements IBootcampServicePort {
     public Mono<PagedResult<Bootcamp>> findAll(int page, int size, String sortBy, boolean ascending) {
         return BootcampValidator.validatePagination(page, size, sortBy)
                 .flatMap(valid -> bootcampPersistencePort.findAll(page, size, sortBy, ascending));
+    }
+
+    @Override
+    public Mono<Void> delete(Long id) {
+        return bootcampPersistencePort.existsById(id)
+                .flatMap(exists -> {
+                    if (!exists)
+                        return Mono.error(new BootcampNotFoundException(id));
+                    return bootcampPersistencePort.delete(id);
+                });
     }
 
     private Mono<List<Capacity>> validateCapacitiesExist(List<Capacity> capacities) {

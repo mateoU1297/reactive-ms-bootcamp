@@ -9,4 +9,6 @@ public interface IBootcampHandler {
     Mono<BootcampResponse> save(BootcampRequest request);
 
     Mono<PagedResponse<BootcampResponse>> findAll(int page, int size, String sortBy, boolean ascending);
+
+    Mono<Void> delete(Long id);
 }

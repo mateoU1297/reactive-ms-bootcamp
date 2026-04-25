@@ -10,4 +10,8 @@ public interface IBootcampPersistencePort {
     Mono<Boolean> existsByName(String name);
 
     Mono<PagedResult<Bootcamp>> findAll(int page, int size, String sortBy, boolean ascending);
+
+    Mono<Void> delete(Long id);
+
+    Mono<Boolean> existsById(Long id);
 }

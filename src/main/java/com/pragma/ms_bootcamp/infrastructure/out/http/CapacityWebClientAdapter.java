@@ -28,6 +28,16 @@ public class CapacityWebClientAdapter implements ICapacityClientPort {
                 .map(this::toDomain);
     }
 
+    @Override
+    public Mono<Void> deleteIfNotReferenced(Long capacityId) {
+        return webClient.delete()
+                .uri("/api/v1/capacities/{id}", capacityId)
+                .retrieve()
+                .onStatus(status -> status.value() == 404,
+                        response -> Mono.empty())
+                .bodyToMono(Void.class);
+    }
+
     private Capacity toDomain(CapacityClientResponse response) {
         List<Technology> technologies = response.getTechnologies() == null
                 ? List.of()

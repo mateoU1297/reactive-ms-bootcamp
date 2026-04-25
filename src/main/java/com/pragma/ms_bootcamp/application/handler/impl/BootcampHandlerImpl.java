@@ -40,4 +40,9 @@ public class BootcampHandlerImpl implements IBootcampHandler {
                 ));
     }
 
+    @Override
+    public Mono<Void> delete(Long id) {
+        return bootcampServicePort.delete(id);
+    }
+
 }
