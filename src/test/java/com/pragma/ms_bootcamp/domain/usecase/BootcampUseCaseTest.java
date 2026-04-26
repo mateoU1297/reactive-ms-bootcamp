@@ -251,4 +251,33 @@ class BootcampUseCaseTest {
 
         verify(bootcampPersistencePort, never()).delete(any());
     }
+
+    @Test
+    void findById_existingBootcamp_success() {
+        when(bootcampPersistencePort.findById(1L)).thenReturn(Mono.just(bootcamp));
+
+        StepVerifier.create(bootcampUseCase.findById(1L))
+                .expectNextMatches(b -> b.getName().equals("Bootcamp Java"))
+                .verifyComplete();
+    }
+
+    @Test
+    void findById_notFound_throwsBootcampNotFound() {
+        when(bootcampPersistencePort.findById(1L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(bootcampUseCase.findById(1L))
+                .expectError(BootcampNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void findById_notFound_neverCallsSave() {
+        when(bootcampPersistencePort.findById(1L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(bootcampUseCase.findById(1L))
+                .expectError(BootcampNotFoundException.class)
+                .verify();
+
+        verify(bootcampPersistencePort, never()).save(any());
+    }
 }

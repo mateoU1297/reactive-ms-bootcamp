@@ -129,6 +129,12 @@ public class BootcampPersistenceAdapter implements IBootcampPersistencePort {
                 .then(bootcampRepository.deleteById(id));
     }
 
+    @Override
+    public Mono<Bootcamp> findById(Long id) {
+        return bootcampRepository.findById(id)
+                .map(bootcampEntityMapper::toDomain);
+    }
+
     private Mono<Bootcamp> mapWithCapacities(BootcampEntity entity) {
         return bootcampCapacityRepository.findByBootcampId(entity.getId())
                 .flatMap(rel -> capacityClientPort.findById(rel.getCapacityId()))
