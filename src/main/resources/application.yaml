@@ -21,6 +21,8 @@ spring:
 clients:
   capacity:
     url: http://localhost:8081
+  report:
+    url: http://localhost:8084
 
 springdoc:
   api-docs:

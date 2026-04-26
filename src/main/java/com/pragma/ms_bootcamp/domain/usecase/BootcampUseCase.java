@@ -9,6 +9,7 @@ import com.pragma.ms_bootcamp.domain.model.Capacity;
 import com.pragma.ms_bootcamp.domain.model.PagedResult;
 import com.pragma.ms_bootcamp.domain.spi.IBootcampPersistencePort;
 import com.pragma.ms_bootcamp.domain.spi.ICapacityClientPort;
+import com.pragma.ms_bootcamp.domain.spi.IReportClientPort;
 import com.pragma.ms_bootcamp.domain.validator.BootcampValidator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -19,10 +20,13 @@ public class BootcampUseCase implements IBootcampServicePort {
 
     private final IBootcampPersistencePort bootcampPersistencePort;
     private final ICapacityClientPort capacityClientPort;
+    private final IReportClientPort reportClientPort;
 
-    public BootcampUseCase(IBootcampPersistencePort bootcampPersistencePort, ICapacityClientPort capacityClientPort) {
+    public BootcampUseCase(IBootcampPersistencePort bootcampPersistencePort, ICapacityClientPort capacityClientPort,
+                           IReportClientPort reportClientPort) {
         this.bootcampPersistencePort = bootcampPersistencePort;
         this.capacityClientPort = capacityClientPort;
+        this.reportClientPort = reportClientPort;
     }
 
     @Override
@@ -39,7 +43,8 @@ public class BootcampUseCase implements IBootcampServicePort {
                 .flatMap(capacities -> {
                     bootcamp.setCapacities(capacities);
                     return bootcampPersistencePort.save(bootcamp);
-                });
+                })
+                .doOnSuccess(reportClientPort::notifyBootcampCreated);
     }
 
     @Override
@@ -67,9 +72,7 @@ public class BootcampUseCase implements IBootcampServicePort {
     private Mono<List<Capacity>> validateCapacitiesExist(List<Capacity> capacities) {
         return Flux.fromIterable(capacities)
                 .flatMap(cap -> capacityClientPort.findById(cap.getId())
-                        .switchIfEmpty(Mono.error(
-                                new CapacityNotFoundException(cap.getId())
-                        ))
+                        .switchIfEmpty(Mono.error(new CapacityNotFoundException(cap.getId())))
                 )
                 .collectList();
     }

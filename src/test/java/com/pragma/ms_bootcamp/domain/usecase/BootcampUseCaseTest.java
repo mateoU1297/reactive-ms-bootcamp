@@ -11,6 +11,7 @@ import com.pragma.ms_bootcamp.domain.model.Capacity;
 import com.pragma.ms_bootcamp.domain.model.PagedResult;
 import com.pragma.ms_bootcamp.domain.spi.IBootcampPersistencePort;
 import com.pragma.ms_bootcamp.domain.spi.ICapacityClientPort;
+import com.pragma.ms_bootcamp.domain.spi.IReportClientPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -37,6 +39,9 @@ class BootcampUseCaseTest {
 
     @Mock
     private ICapacityClientPort capacityClientPort;
+
+    @Mock
+    private IReportClientPort reportClientPort;
 
     @InjectMocks
     private BootcampUseCase bootcampUseCase;
@@ -59,10 +64,13 @@ class BootcampUseCaseTest {
                 .thenReturn(Mono.just(capacities.get(0)));
         when(bootcampPersistencePort.save(any()))
                 .thenReturn(Mono.just(bootcamp));
+        doNothing().when(reportClientPort).notifyBootcampCreated(any());
 
         StepVerifier.create(bootcampUseCase.save(bootcamp))
                 .expectNextMatches(b -> b.getName().equals("Bootcamp Java"))
                 .verifyComplete();
+
+        verify(reportClientPort).notifyBootcampCreated(any());
     }
 
     @Test
