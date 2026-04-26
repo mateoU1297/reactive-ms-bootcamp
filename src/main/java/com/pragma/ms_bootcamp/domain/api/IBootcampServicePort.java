@@ -10,4 +10,6 @@ public interface IBootcampServicePort {
     Mono<PagedResult<Bootcamp>> findAll(int page, int size, String sortBy, boolean ascending);
 
     Mono<Void> delete(Long id);
+
+    Mono<Bootcamp> findById(Long id);
 }

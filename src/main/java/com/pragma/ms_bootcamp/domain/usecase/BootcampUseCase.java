@@ -58,6 +58,12 @@ public class BootcampUseCase implements IBootcampServicePort {
                 });
     }
 
+    @Override
+    public Mono<Bootcamp> findById(Long id) {
+        return bootcampPersistencePort.findById(id)
+                .switchIfEmpty(Mono.error(new BootcampNotFoundException(id)));
+    }
+
     private Mono<List<Capacity>> validateCapacitiesExist(List<Capacity> capacities) {
         return Flux.fromIterable(capacities)
                 .flatMap(cap -> capacityClientPort.findById(cap.getId())

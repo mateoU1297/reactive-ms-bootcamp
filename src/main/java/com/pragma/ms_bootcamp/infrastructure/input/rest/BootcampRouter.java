@@ -106,12 +106,35 @@ public class BootcampRouter {
                                     @ApiResponse(responseCode = "404", description = "Bootcamp not found")
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/bootcamps/{id}",
+                    method = RequestMethod.GET,
+                    beanClass = BootcampRestHandler.class,
+                    beanMethod = "findById",
+                    operation = @Operation(
+                            operationId = "findBootcampById",
+                            summary = "Find bootcamp by id",
+                            tags = {"Bootcamp"},
+                            parameters = {
+                                    @Parameter(name = "id", in = ParameterIn.PATH, required = true,
+                                            schema = @Schema(type = "integer", format = "int64"))
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "200",
+                                            content = @Content(
+                                                    schema = @Schema(implementation = BootcampResponse.class)
+                                            )),
+                                    @ApiResponse(responseCode = "404", description = "Bootcamp not found")
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> bootcampRoutes(BootcampRestHandler handler) {
         return RouterFunctions.route()
                 .POST("/api/v1/bootcamps", handler::save)
                 .GET("/api/v1/bootcamps", handler::findAll)
+                .GET("/api/v1/bootcamps/{id}", handler::findById)
                 .DELETE("/api/v1/bootcamps/{id}", handler::delete)
                 .build();
     }

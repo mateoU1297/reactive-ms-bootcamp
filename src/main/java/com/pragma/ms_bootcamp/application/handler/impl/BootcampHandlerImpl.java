@@ -45,4 +45,10 @@ public class BootcampHandlerImpl implements IBootcampHandler {
         return bootcampServicePort.delete(id);
     }
 
+    @Override
+    public Mono<BootcampResponse> findById(Long id) {
+        return bootcampServicePort.findById(id)
+                .map(bootcampMapper::toResponse);
+    }
+
 }
