@@ -41,7 +41,7 @@ public class BootcampPersistenceAdapter implements IBootcampPersistencePort {
                             .toList();
 
                     return bootcampCapacityRepository.saveAll(relations)
-                            .collectList()
+                            .then()
                             .thenReturn(saved);
                 })
                 .map(saved -> {
