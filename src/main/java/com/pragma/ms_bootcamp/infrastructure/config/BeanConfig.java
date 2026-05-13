@@ -9,13 +9,13 @@ import com.pragma.ms_bootcamp.infrastructure.out.adapter.BootcampPersistenceAdap
 import com.pragma.ms_bootcamp.infrastructure.out.http.CapacityWebClientAdapter;
 import com.pragma.ms_bootcamp.infrastructure.out.http.ReportWebClientAdapter;
 import com.pragma.ms_bootcamp.infrastructure.out.mapper.IBootcampEntityMapper;
+import com.pragma.ms_bootcamp.infrastructure.out.repository.BootCampQueryRepository;
 import com.pragma.ms_bootcamp.infrastructure.out.repository.BootcampCapacityRepository;
 import com.pragma.ms_bootcamp.infrastructure.out.repository.BootcampRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -25,6 +25,7 @@ public class BeanConfig {
     private final BootcampRepository bootcampRepository;
     private final BootcampCapacityRepository bootcampCapacityRepository;
     private final IBootcampEntityMapper bootcampEntityMapper;
+    private final BootCampQueryRepository bootcampQueryRepository;
 
     @Bean
     public WebClient capacityWebClient(@Value("${clients.capacity.url}") String capacityUrl) {
@@ -51,10 +52,9 @@ public class BeanConfig {
     }
 
     @Bean
-    public IBootcampPersistencePort bootcampPersistencePort(ICapacityClientPort capacityClientPort, DatabaseClient databaseClient) {
+    public IBootcampPersistencePort bootcampPersistencePort(ICapacityClientPort capacityClientPort) {
         return new BootcampPersistenceAdapter(bootcampRepository, bootcampCapacityRepository, bootcampEntityMapper,
-                capacityClientPort, databaseClient
-        );
+                capacityClientPort, bootcampQueryRepository);
     }
 
     @Bean
